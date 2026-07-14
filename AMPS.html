@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMPS — A Mortality Predictor Score | Validation Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy: #0B1B2B;
+    --navy-deep: #071322;
+    --panel: #0F2438;
+    --line: #1D3A52;
+    --paper: #EDF3F2;
+    --mint: #35C4A6;
+    --mint-dim: #1E7E6B;
+    --amber: #F2A65A;
+    --coral: #E4572E;
+    --text: #EAF1EF;
+    --text-dim: #9FB4C4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--navy);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+  .display{font-family:'Space Grotesk', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--mint);
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:''; width:22px; height:1px; background:var(--mint);}
+  section{
+    max-width:1120px;
+    margin:0 auto;
+    padding:88px 32px;
+    position:relative;
+  }
+  /* ---------- Waveform divider ---------- */
+  .wave-divider{
+    width:100%; height:46px; overflow:hidden; opacity:0.55;
+  }
+  .wave-divider svg{width:100%; height:100%; display:block;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding-top:64px;
+    padding-bottom:56px;
+    text-align:left;
+  }
+  .hero-top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap;
+    margin-bottom:36px;
+  }
+  .hero-kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .hero h1{
+    font-size:clamp(40px, 7vw, 78px);
+    line-height:0.98;
+    letter-spacing:-0.01em;
+    font-weight:700;
+    margin:14px 0 20px;
+  }
+  .hero h1 span{color:var(--mint);}
+  .hero-sub{
+    max-width:620px;
+    font-size:18px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+  }
+  .badge-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:28px;}
+  .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; padding:7px 12px; border:1px solid var(--line);
+    border-radius:100px; color:var(--text-dim);
+  }
+  .ekg-hero{width:100%; height:110px; margin-top:44px;}
+  .ekg-hero svg{width:100%; height:100%;}
+  .ekg-path{
+    stroke:var(--mint); stroke-width:2.5; fill:none;
+    stroke-dasharray:1400; stroke-dashoffset:1400;
+    animation:draw 3.2s ease-out forwards;
+  }
+  @keyframes draw{to{stroke-dashoffset:0;}}
+
+  /* ---------- SECTION HEADS ---------- */
+  h2.section-title{
+    font-size:clamp(28px,4vw,40px);
+    font-weight:600;
+    margin:14px 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .section-lede{color:var(--text-dim); max-width:640px; font-size:16px; margin-bottom:44px;}
+
+  /* ---------- PROBLEM: bed capacity ---------- */
+  .bed-chart{display:flex; flex-direction:column; gap:22px; margin-top:8px;}
+  .bed-row{display:grid; grid-template-columns:190px 1fr 90px; align-items:center; gap:16px;}
+  .bed-label{font-size:14px; color:var(--text-dim);}
+  .bed-track{height:14px; background:var(--panel); border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .bed-fill{height:100%; border-radius:3px 0 0 3px;}
+  .bed-value{font-family:'IBM Plex Mono', monospace; font-size:15px; font-weight:600; text-align:right;}
+  .bed-note{
+    margin-top:28px; font-size:14px; color:var(--text-dim); border-left:2px solid var(--coral); padding-left:16px;
+  }
+
+  /* ---------- AMPS SCORE ---------- */
+  .score-band{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:2px;
+    background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    margin-bottom:16px;
+  }
+  .score-band .letter-cell{
+    background:var(--panel); text-align:center; padding:20px 6px;
+    font-family:'Space Grotesk', sans-serif; font-size:46px; font-weight:700; color:var(--mint);
+  }
+  @media(max-width:640px){.score-band{grid-template-columns:repeat(4,1fr);} .score-band .letter-cell{font-size:30px; padding:14px 4px;}}
+  .var-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-top:20px;}
+  @media(max-width:720px){.var-grid{grid-template-columns:1fr;}}
+  .var-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 22px;
+    display:flex; gap:16px; align-items:flex-start;
+  }
+  .var-letter{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:var(--mint);
+    width:34px; flex-shrink:0;
+  }
+  .var-card h3{font-size:15px; font-weight:600; margin-bottom:4px;}
+  .var-card p{font-size:13.5px; color:var(--text-dim);}
+  .score-total{
+    margin-top:22px; display:flex; align-items:center; gap:14px;
+    font-family:'IBM Plex Mono', monospace; color:var(--text-dim); font-size:13.5px;
+  }
+  .score-total .pill{
+    background:var(--mint-dim); color:var(--navy-deep); font-weight:700; padding:6px 14px; border-radius:100px;
+  }
+
+  /* ---------- PILOT RESULTS ---------- */
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:52px;}
+  @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:26px 20px;
+  }
+  .stat-num{font-family:'Space Grotesk',sans-serif; font-size:42px; font-weight:700; color:var(--mint); line-height:1;}
+  .stat-label{margin-top:10px; font-size:13px; color:var(--text-dim);}
+
+  .auc-chart{display:flex; flex-direction:column; gap:20px;}
+  .auc-row{display:grid; grid-template-columns:170px 1fr 130px; align-items:center; gap:16px;}
+  @media(max-width:640px){.auc-row{grid-template-columns:110px 1fr 90px;}}
+  .auc-label{font-size:14px;}
+  .auc-label small{display:block; color:var(--text-dim); font-size:11.5px; margin-top:2px;}
+  .auc-track{height:16px; background:var(--panel); border:1px solid var(--line); border-radius:3px; position:relative;}
+  .auc-fill{height:100%; border-radius:3px 0 0 3px;}
+  .auc-value{font-family:'IBM Plex Mono', monospace; font-size:14px; text-align:right;}
+
+  /* ---------- STUDY DESIGN ---------- */
+  .site-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:40px;}
+  @media(max-width:900px){.site-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.site-grid{grid-template-columns:1fr;}}
+  .site-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px;
+    position:relative;
+  }
+  .site-card .n{
+    font-family:'IBM Plex Mono',monospace; color:var(--mint); font-size:12px; margin-bottom:8px; display:block;
+  }
+  .site-card h3{font-size:15px; font-weight:600; margin-bottom:6px;}
+  .site-card p{font-size:12.5px; color:var(--text-dim);}
+
+  .flow-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:48px;}
+  @media(max-width:800px){.flow-grid{grid-template-columns:1fr;}}
+  .flow-card{
+    border:1px solid var(--line); border-radius:10px; padding:22px;
+    background:linear-gradient(180deg, rgba(53,196,166,0.06), transparent);
+  }
+  .flow-card .step{font-family:'IBM Plex Mono',monospace; color:var(--mint); font-size:12px; letter-spacing:0.1em;}
+  .flow-card .big{font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:700; margin:8px 0 4px;}
+  .flow-card p{font-size:13px; color:var(--text-dim);}
+
+  .timeline{position:relative; margin-top:12px; padding-left:2px;}
+  .timeline-track{position:relative; height:6px; background:var(--panel); border:1px solid var(--line); border-radius:4px; margin:36px 0 14px;}
+  .timeline-fill{position:absolute; top:0; left:0; height:100%; background:var(--mint-dim); border-radius:4px;}
+  .timeline-marks{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);}
+  .timeline-phases{display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text-dim);}
+
+  /* ---------- OBJECTIVES ---------- */
+  .obj-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media(max-width:800px){.obj-grid{grid-template-columns:1fr;}}
+  .obj-card{border:1px solid var(--line); border-radius:10px; padding:26px;}
+  .obj-card .eyebrow{margin-bottom:12px;}
+  .obj-card ul{list-style:none; margin-top:10px;}
+  .obj-card li{
+    font-size:14.5px; color:var(--text-dim); padding:10px 0 10px 20px; border-top:1px solid var(--line);
+    position:relative;
+  }
+  .obj-card li:first-of-type{border-top:none;}
+  .obj-card li::before{content:'—'; position:absolute; left:0; color:var(--mint);}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--navy-deep);
+    padding:56px 32px 40px;
+    text-align:center;
+    border-top:1px solid var(--line);
+  }
+  footer .display{font-size:20px; margin-bottom:8px;}
+  footer p{color:var(--text-dim); font-size:13px; max-width:520px; margin:6px auto;}
+  footer .contact{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--mint); margin-top:18px;}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-top">
+    <div class="hero-kicker">Addis Ababa University · College of Medicine and Health Sciences</div>
+    <div class="badge-row">
+      <span class="badge">Feb – Sep 2026</span>
+      <span class="badge">5 ICUs, Addis Ababa</span>
+      <span class="badge">Mixed methods</span>
+    </div>
+  </div>
+  <h1>A Mortality<br>Predictor <span>Score</span></h1>
+  <p class="hero-sub">A seven-item bedside score built for Ethiopian ICUs — validated pilot performance, now heading into a five-site external validation study to test whether it holds up beyond where it was born.</p>
+
+  <div class="ekg-hero" aria-hidden="true">
+    <svg viewBox="0 0 1000 110" preserveAspectRatio="none">
+      <path class="ekg-path" d="M0,60 L120,60 L145,60 L160,20 L180,95 L200,60 L230,60 L360,60 L380,58 L400,20 L418,95 L436,60 L460,60 L580,60 L600,58 L618,25 L636,92 L654,60 L680,60 L800,60 L820,58 L838,22 L856,94 L874,60 L900,60 L1000,60"/>
+    </svg>
+  </div>
+</section>
+
+<div class="wave-divider" aria-hidden="true">
+  <svg viewBox="0 0 1000 46" preserveAspectRatio="none"><path d="M0,23 L1000,23" stroke="#1D3A52" stroke-width="1"/></svg>
+</div>
+
+<!-- THE PROBLEM -->
+<section id="problem">
+  <div class="eyebrow">The gap</div>
+  <h2 class="section-title">Built where the beds run out</h2>
+  <p class="section-lede">Prognostic scores used worldwide were largely developed in high-income ICUs, where critical-care capacity looks nothing like Ethiopia's. AMPS was built to work without advanced labs, in settings like these.</p>
+
+  <div class="bed-chart">
+    <div class="bed-row">
+      <div class="bed-label">United States</div>
+      <div class="bed-track"><div class="bed-fill" style="width:100%; background:var(--text-dim);"></div></div>
+      <div class="bed-value">33.6</div>
+    </div>
+    <div class="bed-row">
+      <div class="bed-label">Türkiye / Czech Rep.</div>
+      <div class="bed-track"><div class="bed-fill" style="width:100%; background:var(--text-dim); max-width:172%;"></div></div>
+      <div class="bed-value">54–58</div>
+    </div>
+    <div class="bed-row">
+      <div class="bed-label">Asia (avg.)</div>
+      <div class="bed-track"><div class="bed-fill" style="width:11%; background:var(--amber);"></div></div>
+      <div class="bed-value">3.6</div>
+    </div>
+    <div class="bed-row">
+      <div class="bed-label">Africa — Egypt (highest)</div>
+      <div class="bed-track"><div class="bed-fill" style="width:31%; background:var(--coral);"></div></div>
+      <div class="bed-value">10.6</div>
+    </div>
+    <div class="bed-row">
+      <div class="bed-label">Africa — Sudan (lowest)</div>
+      <div class="bed-track"><div class="bed-fill" style="width:1%; background:var(--coral);"></div></div>
+      <div class="bed-value">~0</div>
+    </div>
+  </div>
+  <p class="bed-note">ICU beds per 100,000 population. When beds are this scarce, who gets one matters — which is exactly the decision AMPS is designed to support.</p>
+</section>
+
+<div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 1000 46" preserveAspectRatio="none"><path d="M0,23 L1000,23" stroke="#1D3A52" stroke-width="1"/></svg></div>
+
+<!-- THE SCORE -->
+<section id="score">
+  <div class="eyebrow">The instrument</div>
+  <h2 class="section-title">Seven signs, scored at the bedside</h2>
+  <p class="section-lede">Each variable is binary — present (1) or absent (0) — assessed within 6 hours of ICU admission where possible. No labs beyond a basic panel are required.</p>
+
+  <div class="score-band">
+    <div class="letter-cell">A</div>
+    <div class="letter-cell">M</div>
+    <div class="letter-cell">P</div>
+    <div class="letter-cell">S</div>
+  </div>
+
+  <div class="var-grid">
+    <div class="var-card">
+      <div class="var-letter">A</div>
+      <div><h3>Altered mental status</h3><p>Glasgow Coma Scale &lt; 8, or the intubated equivalent, assessed off sedation.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">M</div>
+      <div><h3>Mechanical ventilation</h3><p>Intubation/tracheostomy with ventilatory support within 24 hours of admission.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">M</div>
+      <div><h3>More than two organ systems</h3><p>Three or more organ systems involved, e.g. cardiovascular + renal + respiratory.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">P</div>
+      <div><h3>Pressure &lt; 90 mmHg</h3><p>Systolic BP under 90, or vasopressor support required to maintain it.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">P</div>
+      <div><h3>Potentially irreversible condition</h3><p>Senior physician judges &lt;50% survival probability at admission.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">S</div>
+      <div><h3>Suspected infection</h3><p>Clinical, laboratory, or imaging evidence within 24 hours of ICU stay.</p></div>
+    </div>
+    <div class="var-card">
+      <div class="var-letter">S</div>
+      <div><h3>Severe hypoalbuminemia</h3><p>Serum albumin ≤ 2 g/dL.</p></div>
+    </div>
+  </div>
+  <div class="score-total"><span class="pill">0 – 7</span> total score range · higher score, higher predicted mortality risk</div>
+</section>
+
+<div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 1000 46" preserveAspectRatio="none"><path d="M0,23 L1000,23" stroke="#1D3A52" stroke-width="1"/></svg></div>
+
+<!-- PILOT RESULTS -->
+<section id="pilot">
+  <div class="eyebrow">Pilot evidence</div>
+  <h2 class="section-title">265 patients, one hospital, a strong signal</h2>
+  <p class="section-lede">Piloted at Tikur Anbessa Specialized Hospital's ICU, where 39.2% of patients did not survive — the backdrop against which AMPS was first tested.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">265</div><div class="stat-label">Patients in the pilot cohort</div></div>
+    <div class="stat-card"><div class="stat-num">86.4%</div><div class="stat-label">Overall predictive accuracy</div></div>
+    <div class="stat-card"><div class="stat-num">87.6%</div><div class="stat-label">Sensitivity</div></div>
+    <div class="stat-card"><div class="stat-num">84.6%</div><div class="stat-label">Specificity</div></div>
+  </div>
+
+  <div class="auc-chart">
+    <div class="auc-row">
+      <div class="auc-label">AMPS<small>vs other scores in use locally</small></div>
+      <div class="auc-track"><div class="auc-fill" style="width:92%; background:var(--mint);"></div></div>
+      <div class="auc-value">0.92 <span style="color:var(--text-dim)">(0.88–0.93)</span></div>
+    </div>
+    <div class="auc-row">
+      <div class="auc-label">MPM II score</div>
+      <div class="auc-track"><div class="auc-fill" style="width:86%; background:var(--amber);"></div></div>
+      <div class="auc-value">0.86 <span style="color:var(--text-dim)">(0.82–0.91)</span></div>
+    </div>
+    <div class="auc-row">
+      <div class="auc-label">ICU priority level</div>
+      <div class="auc-track"><div class="auc-fill" style="width:76%; background:var(--text-dim);"></div></div>
+      <div class="auc-value">0.76 <span style="color:var(--text-dim)">(0.68–0.83)</span></div>
+    </div>
+  </div>
+  <p class="bed-note" style="border-color:var(--mint); margin-top:32px;">Area under the ROC curve, single-center. Promising — but a single center is exactly why this study exists.</p>
+</section>
+
+<div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 1000 46" preserveAspectRatio="none"><path d="M0,23 L1000,23" stroke="#1D3A52" stroke-width="1"/></svg></div>
+
+<!-- VALIDATION DESIGN -->
+<section id="design">
+  <div class="eyebrow">The validation study</div>
+  <h2 class="section-title">Five ICUs, one shared protocol</h2>
+  <p class="section-lede">Purposively selected to capture Addis Ababa's institutional diversity — trauma, burns, tertiary referral, and community care all represented.</p>
+
+  <div class="site-grid">
+    <div class="site-card"><span class="n">01</span><h3>Tikur Anbessa Specialized Hospital</h3><p>Tertiary referral center — where AMPS was piloted</p></div>
+    <div class="site-card"><span class="n">02</span><h3>St. Paul's Hospital Millennium Medical College</h3><p>Tertiary referral center</p></div>
+    <div class="site-card"><span class="n">03</span><h3>Addis Ababa Burn, Emergency &amp; Trauma Center</h3><p>Dedicated trauma center</p></div>
+    <div class="site-card"><span class="n">04</span><h3>Yekatit 12 Hospital Medical College</h3><p>Trauma, medical &amp; burn care</p></div>
+    <div class="site-card"><span class="n">05</span><h3>Zewditu Memorial Hospital</h3><p>Community referral hospital</p></div>
+    <div class="site-card" style="background:transparent; border-style:dashed; display:flex; align-items:center; justify-content:center;">
+      <p style="text-align:center; font-size:12.5px;">Adults ≥18, consecutive sampling until target reached</p>
+    </div>
+  </div>
+
+  <div class="flow-grid">
+    <div class="flow-card">
+      <div class="step">SAMPLE SIZE</div>
+      <div class="big">410</div>
+      <p>Total patients targeted — 205 base + multicenter design effect (ICC 0.02) + 10% attrition buffer, ≈82 per site.</p>
+    </div>
+    <div class="flow-card">
+      <div class="step">DATA POINTS</div>
+      <div class="big">2×</div>
+      <p>Collected at ICU admission and again at 48 hours, to test how AMPS performs over time, not just on arrival.</p>
+    </div>
+    <div class="flow-card">
+      <div class="step">QUALITATIVE ARM</div>
+      <div class="big">20–30</div>
+      <p>ICU physicians and nurses interviewed, plus 1–2 focus groups, on feasibility, barriers, and workflow fit.</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="eyebrow" style="margin-bottom:0;">Timeline — Feb to Sep 2026</div>
+    <div class="timeline-track"><div class="timeline-fill" style="width:100%; background:linear-gradient(90deg, var(--mint-dim), var(--mint));"></div></div>
+    <div class="timeline-marks">
+      <span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span>
+    </div>
+    <div class="timeline-phases">
+      <span>IRB · recruitment · training</span>
+      <span>Data collection (May–Jul)</span>
+      <span>Analysis · dissemination</span>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 1000 46" preserveAspectRatio="none"><path d="M0,23 L1000,23" stroke="#1D3A52" stroke-width="1"/></svg></div>
+
+<!-- OBJECTIVES -->
+<section id="objectives">
+  <div class="eyebrow">What success looks like</div>
+  <h2 class="section-title">Objectives &amp; expected outcomes</h2>
+
+  <div class="obj-grid">
+    <div class="obj-card">
+      <div class="eyebrow">Specific objectives</div>
+      <ul>
+        <li>Evaluate AMPS's accuracy, discrimination (AUROC), and calibration (Hosmer–Lemeshow) at admission and 48 hours.</li>
+        <li>Assess feasibility, barriers, and facilitators of routine use from ICU physicians' and nurses' perspectives.</li>
+        <li>Compare performance across five institutionally diverse sites to test generalizability.</li>
+      </ul>
+    </div>
+    <div class="obj-card">
+      <div class="eyebrow">Expected outcomes</div>
+      <ul>
+        <li>A validated, low-resource mortality prediction tool suited to Ethiopian ICUs.</li>
+        <li>Evidence-based insight into real-world adoption challenges and enablers.</li>
+        <li>A foundation for wider adoption and regional adaptation across similar LMIC critical-care settings.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="display">AMPS Validation Study</div>
+  <p>Funded by Addis Ababa University's Female Research Grant · Ethical approval via AAU and St. Paul's Hospital Millennium Medical College IRBs · Total budget 355,000 birr.</p>
+  <div class="contact">Dr. Finot Debebe · finot.debebe@aau.edu.et</div>
+</footer>
+
+</body>
+</html>
